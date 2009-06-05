@@ -1,0 +1,49 @@
+ActsAsKeywordable
+=================
+
+Introduction goes here.
+Keywords are similar to tags. Multiple users can assign keywords to an object. The keywords for an object are ranked by the frequency.
+
+Example
+=======
+Model Class
+class CreateGraphicKeywords < ActiveRecord::Migration
+  def self.up
+    create_table :graphic_keywords do |t|
+      t.integer :graphic_id, :null=>false
+      t.string :keyword, :null=>false
+      t.integer :count, :default=>0, :null=>false
+      t.datetime :created_at
+    end
+    add_index :graphic_keywords, [:graphic_id, :keyword], :unique=>true
+    add_index :graphic_keywords, :count
+  end
+
+  def self.down
+    drop_table :graphic_keywords
+  end
+end
+
+g1 = Graphic.find(1)
+g1.add_keyword('music')
+g1.add_keyword('piano')
+
+g2 = Graphic.find(2).keywords = ["music", "guitar", "music"]
+g2.add_keyword('music')
+g2.add_keyword('guitar')
+g2.add_keyword('music')
+
+g3 = Graphic.find(3)
+g3.add_keyword('new york')
+
+Graphic.for_keyword('music') => [#<Graphic id: 2>, #<Graphic id:3>]
+
+Top keywords
+------------
+Graphic.top_keywords(10) => [{:keyword=>"music", :count=>2}, {:keyword=>"piano", :count=>1}]
+
+Related keywords
+----------------
+Graphic.related_keywords('music') => [{:keyword=>"piano", :count=>1}, {:keyword=>"guitar", :count=>1}]
+
+Copyright (c) 2009 Weiwen Li, released under the MIT license
