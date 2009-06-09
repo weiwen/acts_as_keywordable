@@ -11,7 +11,7 @@ module CC
         def acts_as_keywordable(options={})
           ActiveRecord::Base.send(:class_name_of_active_record_descendant, self).to_s
           keyword_classname = options[:keyword_classname] || ActiveRecord::Base.send(:class_name_of_active_record_descendant, self).to_s + "Keyword"
-          has_many :keywords, :class_name=>keyword_classname, :order=>'count desc', :dependent => :destroy
+          has_many :keywords, :class_name=>keyword_classname, :dependent => :destroy
 
           include CC::Acts::Keywordable::InstanceMethods
           extend CC::Acts::Keywordable::SingletonMethods
@@ -79,7 +79,7 @@ module CC
           kwd.strip!
           return if (kwd.blank? || kwd.size > 25)
           kwd = keywords.find_or_create_by_keyword(kwd)
-          kwd.increment(:count)
+          kwd.increment! :count
         end
       end
     end
