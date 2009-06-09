@@ -79,7 +79,7 @@ module CC
           kwd.strip!
           return if (kwd.blank? || kwd.size > 25)
           kwd = keywords.find_or_create_by_keyword(kwd)
-          kwd.update_attribute(:count, kwd.count+1)
+          kwd.increment(:count)
         end
       end
     end
