@@ -57,25 +57,17 @@ module CC
         def related_keywords(kwd, limit=100)
           keyword_table =  reflections[:keywords].table_name
           foreign_key = self.name.downcase + '_id'
-          condition = sanitize_sql(["keyword = ?", kwd])
-          negative_condition = sanitize_sql(["keyword != ?", kwd])
-          sub_query = "SELECT #{foreign_key} FROM #{keyword_table} WHERE #{condition} ORDER BY count DESC LIMIT 50"
-          id_list = connection.select_all(sub_query).map{|x| x[foreign_key]}
-          if id_list.empty?
-            return id_list
-          else
-            ids_str = id_list.join(',')
-            puts ids_str
-            sql = %Q{
-                SELECT keyword, count(*) as cnt
-                FROM #{keyword_table}
-                WHERE #{foreign_key} in (#{ids_str}) AND #{negative_condition}
-                GROUP BY keyword
-                ORDER BY cnt DESC
-                LIMIT #{limit}
-            }
-            connection.select_all(sql).map{|row| {:keyword=>row['keyword'], :count=>row['cnt']}}
-          end
+          condition = sanitize_sql(["a.keyword = ?", kwd])
+          negative_condition = sanitize_sql(["b.keyword != ?", kwd])
+          sql = %Q{
+              SELECT b.keyword, sum(b.count) as cnt 
+              FROM #{keyword_table} b, #{keyword_table} a
+              WHERE a.#{foreign_key} = b.#{foreign_key} AND #{condition}
+              GROUP BY b.#{foreign_key}
+              ORDER BY cnt DESC
+              LIMIT #{limit}
+          }
+          connection.select_all(sql).map{|row| {:keyword=>row['keyword'], :count=>row['cnt']}}
         end
         
       end
